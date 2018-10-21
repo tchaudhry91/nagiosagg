@@ -31,7 +31,7 @@ func getRegExMap() (map[string]*regexp.Regexp, error) {
 	return reMap, err
 }
 
-func getBlankNagiosStatus() NagiosStatus {
+func newNagiosStatus() NagiosStatus {
 	s := NagiosStatus{}
 	s.values = make(map[string]string)
 	return s
@@ -59,7 +59,7 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 	reID := reMap["id"]
 	reAttr := reMap["attr"]
 	reEnd := reMap["end"]
-	cur := getBlankNagiosStatus()
+	cur := newNagiosStatus()
 	for _, l := range lines {
 		l = strings.TrimSpace(l)
 		if len(l) == 0 || l[0] == '#' {
@@ -81,7 +81,7 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 		}
 		if matchID := reEnd.MatchString(l); matchID {
 			result[cur.hostname] = append(result[cur.hostname], cur)
-			cur = getBlankNagiosStatus()
+			cur = newNagiosStatus()
 		}
 	}
 	return result, err
