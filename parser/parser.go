@@ -60,16 +60,16 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 	reAttr := reMap["attr"]
 	reEnd := reMap["end"]
 	cur := getBlankNagiosStatus()
-	for _, line := range lines {
-		line := strings.TrimSpace(line)
-		if len(line) == 0 || line[0] == '#' {
+	for _, l := range lines {
+		l = strings.TrimSpace(l)
+		if len(l) == 0 || l[0] == '#' {
 			continue
 		}
-		if subMatch := reID.FindStringSubmatch(line); subMatch != nil {
+		if subMatch := reID.FindStringSubmatch(l); subMatch != nil {
 			cur.statusType = subMatch[1]
 			continue
 		}
-		if subMatch := reAttr.FindStringSubmatch(line); subMatch != nil {
+		if subMatch := reAttr.FindStringSubmatch(l); subMatch != nil {
 			key := subMatch[1]
 			value := subMatch[2]
 			if key == "host_name" {
@@ -79,7 +79,7 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 			}
 			continue
 		}
-		if matchID := reEnd.MatchString(line); matchID {
+		if matchID := reEnd.MatchString(l); matchID {
 			result[cur.hostname] = append(result[cur.hostname], cur)
 			cur = getBlankNagiosStatus()
 		}
