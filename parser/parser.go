@@ -37,14 +37,20 @@ func getBlankNagiosStatus() NagiosStatus {
 	return s
 }
 
-// ParseStatus parses status and returns a mapped list of issues per hostname
-func ParseStatus(f string) (map[string][]NagiosStatus, error) {
-	result := make(map[string][]NagiosStatus)
+// ParseStatusFromFile reads nagios entries from a file and returns a mapped listof issues per hostname
+func ParseStatusFromFile(f string) (map[string][]NagiosStatus, error) {
+	var result map[string][]NagiosStatus
 	raw, err := ioutil.ReadFile(f)
 	if err != nil {
 		return result, err
 	}
 	data := string(raw)
+	return ParseStatus(data)
+}
+
+// ParseStatus parses status and returns a mapped list of issues per hostname
+func ParseStatus(data string) (map[string][]NagiosStatus, error) {
+	result := make(map[string][]NagiosStatus)
 	lines := strings.Split(data, "\n")
 	reMap, err := getRegExMap()
 	if err != nil {

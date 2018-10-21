@@ -49,7 +49,7 @@ func TestRegularExpressions(t *testing.T) {
 
 func TestParser(t *testing.T) {
 	f := nagiosFile
-	result, err := ParseStatus(*f)
+	result, err := ParseStatusFromFile(*f)
 	if err != nil {
 		t.Errorf("Failed to parse nagios status")
 		t.FailNow()
