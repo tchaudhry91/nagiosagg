@@ -43,15 +43,21 @@ func openBoltDB(localDB string) (*bolt.DB, error) {
 // GetParsedNagios returns a parsed list of nagios issues per host
 func (svc *nagiosParserSvc) GetParsedNagios(ctx context.Context) (map[string][]parser.NagiosStatus, error) {
 	result := make(map[string][]parser.NagiosStatus)
-	var resultB []byte
 	localDB, err := openBoltDB(svc.localDB)
 	if err != nil {
 		return result, err
 	}
-	err = localDB.Update(func(tx *bolt.Tx) error {
+	err = localDB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("NagiosDB"))
-		resultB = b.Get([]byte("current"))
-		err = json.Unmarshal(resultB, &result)
+		err = b.ForEach(func(k, v []byte) error {
+			var statuses []parser.NagiosStatus
+			err := json.Unmarshal(v, &statuses)
+			if err != nil {
+				return err
+			}
+			result[string(k)] = statuses
+			return nil
+		})
 		return nil
 	})
 	localDB.Close()
@@ -93,10 +99,6 @@ func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
 		}
 	}
 	// Marshall and Store results in localDB
-	resultB, err := json.Marshal(result)
-	if err != nil {
-		return err
-	}
 	localDB, err := openBoltDB(svc.localDB)
 	if err != nil {
 		return err
@@ -106,16 +108,19 @@ func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		err = b.Put([]byte("current"), resultB)
+		for host, statuses := range result {
+			statB, err := json.Marshal(statuses)
+			if err != nil {
+				return err
+			}
+			err = b.Put([]byte(host), statB)
+		}
 		return err
 	})
 	if err != nil {
 		localDB.Close()
 		return err
 	}
-	err = localDB.Close()
-	if err != nil {
-		return err
-	}
+	localDB.Close()
 	return nil
 }
