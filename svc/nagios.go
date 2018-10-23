@@ -109,6 +109,13 @@ func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
 		err = b.Put([]byte("current"), resultB)
 		return err
 	})
-	localDB.Close()
+	if err != nil {
+		localDB.Close()
+		return err
+	}
+	err = localDB.Close()
+	if err != nil {
+		return err
+	}
 	return nil
 }
