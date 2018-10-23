@@ -2,29 +2,68 @@ package svc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/boltdb/bolt"
 	"github.com/tchaudhry91/nagiosagg/parser"
 )
 
 // NagiosParserSvc is a service that returns aggregated data from various nagios sources
 type NagiosParserSvc interface {
 	GetParsedNagios(ctx context.Context) (map[string][]parser.NagiosStatus, error)
-	//	RefreshNagiosData(ctx context.Context, statusDir string) error
+	RefreshNagiosData(ctx context.Context) error
 }
 
 type nagiosParserSvc struct {
 	statusDir string
+	localDB   string
 }
 
-//GetParsedNagiosData returns a parsed map of hostname to issues from various nagios status files
-func (svc nagiosParserSvc) GetParsedNagios(ctx context.Context) (map[string][]parser.NagiosStatus, error) {
+// NewNagiosParserSvc returns a boltdb backed nagios parser service
+func NewNagiosParserSvc(statusDir, localDB string) (NagiosParserSvc, error) {
+	svc := nagiosParserSvc{statusDir: statusDir, localDB: localDB}
+	if _, err := os.Stat(statusDir); err != nil {
+		return &svc, err
+	}
+	return &svc, nil
+}
+
+func openBoltDB(localDB string) (*bolt.DB, error) {
+	db, err := bolt.Open(localDB, 0600, nil)
+	if err != nil {
+		return db, err
+	}
+	return db, nil
+}
+
+// GetParsedNagios returns a parsed list of nagios issues per host
+func (svc *nagiosParserSvc) GetParsedNagios(ctx context.Context) (map[string][]parser.NagiosStatus, error) {
 	result := make(map[string][]parser.NagiosStatus)
-	files, err := filepath.Glob(svc.statusDir + "/*.dat")
+	var resultB []byte
+	localDB, err := openBoltDB(svc.localDB)
 	if err != nil {
 		return result, err
+	}
+	err = localDB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("NagiosDB"))
+		resultB = b.Get([]byte("current"))
+		err = json.Unmarshal(resultB, &result)
+		return nil
+	})
+	localDB.Close()
+	return result, err
+}
+
+//RefreshNagiosData returns a parsed map of hostname to issues from various nagios status files
+func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
+	result := make(map[string][]parser.NagiosStatus)
+	files, err := filepath.Glob(filepath.Join(svc.statusDir, "*.dat"))
+	if err != nil {
+		return err
 	}
 	gatherers := len(files)
 	var wg sync.WaitGroup
@@ -46,12 +85,30 @@ func (svc nagiosParserSvc) GetParsedNagios(ctx context.Context) (map[string][]pa
 	close(resultChan)
 	close(errChan)
 	if len(errChan) > 0 {
-		return result, fmt.Errorf("Failed to parse nagios data: %v ", <-errChan)
+		return fmt.Errorf("Failed to parse nagios data: %v ", <-errChan)
 	}
 	for resultChunk := range resultChan {
 		for hostname, values := range resultChunk {
 			result[hostname] = values
 		}
 	}
-	return result, nil
+	// Marshall and Store results in localDB
+	resultB, err := json.Marshal(result)
+	if err != nil {
+		return err
+	}
+	localDB, err := openBoltDB(svc.localDB)
+	if err != nil {
+		return err
+	}
+	err = localDB.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucketIfNotExists([]byte("NagiosDB"))
+		if err != nil {
+			return err
+		}
+		err = b.Put([]byte("current"), resultB)
+		return err
+	})
+	localDB.Close()
+	return nil
 }

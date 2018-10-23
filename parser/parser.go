@@ -8,9 +8,9 @@ import (
 
 // NagiosStatus is a status structure for nagios events
 type NagiosStatus struct {
-	statusType string
-	hostname   string
-	values     map[string]string
+	StatusType string            `json:"status_type,omitempty"`
+	Hostname   string            `json:"hostname,omitempty"`
+	Values     map[string]string `json:"values,omitempty"`
 }
 
 func getRegExMap() (map[string]*regexp.Regexp, error) {
@@ -33,7 +33,7 @@ func getRegExMap() (map[string]*regexp.Regexp, error) {
 
 func newNagiosStatus() NagiosStatus {
 	s := NagiosStatus{}
-	s.values = make(map[string]string)
+	s.Values = make(map[string]string)
 	return s
 }
 
@@ -66,21 +66,21 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 			continue
 		}
 		if subMatch := reID.FindStringSubmatch(l); subMatch != nil {
-			cur.statusType = subMatch[1]
+			cur.StatusType = subMatch[1]
 			continue
 		}
 		if subMatch := reAttr.FindStringSubmatch(l); subMatch != nil {
 			key := subMatch[1]
 			value := subMatch[2]
 			if key == "host_name" {
-				cur.hostname = value
+				cur.Hostname = value
 			} else {
-				cur.values[key] = value
+				cur.Values[key] = value
 			}
 			continue
 		}
 		if matchID := reEnd.MatchString(l); matchID {
-			result[cur.hostname] = append(result[cur.hostname], cur)
+			result[cur.Hostname] = append(result[cur.Hostname], cur)
 			cur = newNagiosStatus()
 		}
 	}
