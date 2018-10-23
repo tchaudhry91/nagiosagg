@@ -1,3 +1,4 @@
 .vscode/*
 testsamples/*
-*status.dat*
+*.dat*
+
