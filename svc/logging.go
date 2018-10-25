@@ -40,13 +40,3 @@ func (mw *loggingMiddleware) RefreshNagiosData(ctx context.Context) (err error) 
 	err = mw.next.RefreshNagiosData(ctx)
 	return err
 }
-
-// LoggingMiddleware produces a logging middleware builder
-func LoggingMiddleware(logger log.Logger) Middleware {
-	return func(next NagiosParserSvc) NagiosParserSvc {
-		return &loggingMiddleware{
-			next:   next,
-			logger: logger,
-		}
-	}
-}
