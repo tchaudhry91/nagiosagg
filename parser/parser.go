@@ -10,6 +10,7 @@ import (
 type NagiosStatus struct {
 	StatusType string            `json:"status_type,omitempty"`
 	Hostname   string            `json:"hostname,omitempty"`
+	State      string            `json:"state,omitempty"`
 	Values     map[string]string `json:"values,omitempty"`
 }
 
@@ -31,20 +32,18 @@ func getRegExMap() (map[string]*regexp.Regexp, error) {
 	return reMap, err
 }
 
-func getStateMapping() map[string]map[int]string {
-	return map[string]map[int]string {
-		"hosts":
-		{
-			0: "OK",
-			1: "DOWN",
-			2: "UNREACHABLE",
+func getStateMapping() map[string]map[string]string {
+	return map[string]map[string]string{
+		"hosts": {
+			"0": "OK",
+			"1": "DOWN",
+			"2": "UNREACHABLE",
 		},
-		"services":
-		{
-			0: "OK",
-			1: "WARNING",
-			2: "CRITICAL",
-			3: "UNKNOWN",
+		"services": {
+			"0": "OK",
+			"1": "WARNING",
+			"2": "CRITICAL",
+			"3": "UNKNOWN",
 		},
 	}
 
@@ -69,6 +68,7 @@ func ParseStatusFromFile(f string) (map[string][]NagiosStatus, error) {
 
 // ParseStatus parses status and returns a mapped list of issues per hostname
 func ParseStatus(data string) (map[string][]NagiosStatus, error) {
+	mapping := getStateMapping()
 	result := make(map[string][]NagiosStatus)
 	lines := strings.Split(data, "\n")
 	reMap, err := getRegExMap()
@@ -99,6 +99,15 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 			continue
 		}
 		if matchID := reEnd.MatchString(l); matchID {
+			if _, found := cur.Values["current_state"]; !found {
+				// State not found = invalid alert, move on
+				cur = newNagiosStatus()
+				continue
+			}
+			if cur.StatusType == "hoststatus" {
+				cur.State = mapping["Host"][cur.Values["current_state"]]
+			}
+			cur.State = mapping["Service"][cur.Values["current_state"]]
 			result[cur.Hostname] = append(result[cur.Hostname], cur)
 			cur = newNagiosStatus()
 		}

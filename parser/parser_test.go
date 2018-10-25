@@ -58,4 +58,23 @@ func TestParser(t *testing.T) {
 		t.Errorf("Invalid number of hosts in result: %d", len(result))
 		t.FailNow()
 	}
+	var services, hosts, others int
+	for _, r := range result {
+		for _, status := range r {
+			if status.StatusType == "hoststatus" {
+				hosts++
+				continue
+			}
+			if status.StatusType == "servicestatus" {
+				services++
+				continue
+			}
+			others++
+		}
+	}
+	t.Logf("Following distribution was found:\nHostAlers:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
+	if hosts < 1 || services < 1 || others > 0 {
+		t.Errorf("Following distribution was found:\nHostAlers:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
+		t.FailNow()
+	}
 }
