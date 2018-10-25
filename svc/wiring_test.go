@@ -9,11 +9,9 @@ import (
 	"testing"
 
 	"github.com/go-kit/kit/log"
-	"github.com/gorilla/mux"
 )
 
 var nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
-var service *NagiosParserSvc
 var router http.Handler
 var tempDBWire = filepath.Join(os.TempDir(), "wiring-test.db")
 var srv *httptest.Server
@@ -28,7 +26,6 @@ func initService() {
 
 func cleanUp() {
 	os.Remove(tempDBWire)
-	router = mux.NewRouter()
 }
 
 func TestHTTPWiring(t *testing.T) {
