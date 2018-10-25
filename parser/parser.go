@@ -10,6 +10,7 @@ import (
 type NagiosStatus struct {
 	StatusType string            `json:"status_type,omitempty"`
 	Hostname   string            `json:"hostname,omitempty"`
+	Service    string            `json:"service,omitempty"`
 	State      string            `json:"state,omitempty"`
 	Values     map[string]string `json:"values,omitempty"`
 }
@@ -107,7 +108,10 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 			if cur.StatusType == "hoststatus" {
 				cur.State = mapping["Host"][cur.Values["current_state"]]
 			}
-			cur.State = mapping["Service"][cur.Values["current_state"]]
+			if cur.StatusType == "servicestatus" {
+				cur.State = mapping["Service"][cur.Values["current_state"]]
+				cur.Service = cur.Values["service_description"]
+			}
 			result[cur.Hostname] = append(result[cur.Hostname], cur)
 			cur = newNagiosStatus()
 		}
