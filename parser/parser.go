@@ -31,6 +31,25 @@ func getRegExMap() (map[string]*regexp.Regexp, error) {
 	return reMap, err
 }
 
+func getStateMapping() map[string]map[int]string {
+	return map[string]map[int]string {
+		"hosts":
+		{
+			0: "OK",
+			1: "DOWN",
+			2: "UNREACHABLE",
+		},
+		"services":
+		{
+			0: "OK",
+			1: "WARNING",
+			2: "CRITICAL",
+			3: "UNKNOWN",
+		},
+	}
+
+}
+
 func newNagiosStatus() NagiosStatus {
 	s := NagiosStatus{}
 	s.Values = make(map[string]string)
