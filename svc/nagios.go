@@ -104,6 +104,10 @@ func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
 		return err
 	}
 	err = localDB.Update(func(tx *bolt.Tx) error {
+		err := tx.DeleteBucket([]byte("NagiosDB"))
+		if err != nil {
+			// Ignore for now, because bucket may not exist
+		}
 		b, err := tx.CreateBucketIfNotExists([]byte("NagiosDB"))
 		if err != nil {
 			return err
