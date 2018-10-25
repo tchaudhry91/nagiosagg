@@ -49,6 +49,9 @@ func (svc *nagiosParserSvc) GetParsedNagios(ctx context.Context) (map[string][]p
 	}
 	err = localDB.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("NagiosDB"))
+		if b == nil {
+			return fmt.Errorf("Empty Status Bucket")
+		}
 		err = b.ForEach(func(k, v []byte) error {
 			var statuses []parser.NagiosStatus
 			err := json.Unmarshal(v, &statuses)
