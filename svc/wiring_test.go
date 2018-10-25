@@ -7,20 +7,28 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/go-kit/kit/log"
+	"github.com/gorilla/mux"
 )
 
 var nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
+var service *NagiosParserSvc
+var router http.Handler
 var tempDBWire = filepath.Join(os.TempDir(), "wiring-test.db")
 var srv *httptest.Server
 
 func initService() {
+	logger := log.NewNopLogger()
 	service, _ := NewNagiosParserSvc(*nagiosStatusDir, tempDBWire)
+	service = NewLoggingMiddleware(logger, service)
 	router := MakeHTTPHandler(service)
 	srv = httptest.NewServer(router)
 }
 
 func cleanUp() {
 	os.Remove(tempDBWire)
+	router = mux.NewRouter()
 }
 
 func TestHTTPWiring(t *testing.T) {
@@ -29,6 +37,7 @@ func TestHTTPWiring(t *testing.T) {
 		t.Errorf("Failed to build service")
 		t.FailNow()
 	}
+	service = NewLoggingMiddleware(log.NewNopLogger(), service)
 	router := MakeHTTPHandler(service)
 	if router == nil {
 		t.Errorf("Failed to get handler")

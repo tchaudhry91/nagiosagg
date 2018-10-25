@@ -33,6 +33,9 @@ func main() {
 		panic("Failed to create service")
 	}
 
+	// Middlewares
+	service = svc.NewLoggingMiddleware(logger, service)
+
 	// Initialize router
 	r := svc.MakeHTTPHandler(service)
 
