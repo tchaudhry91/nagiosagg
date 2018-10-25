@@ -9,13 +9,13 @@ import (
 )
 
 // LoggingMiddleware logs NagiosParserSvc requests and responses
-type LoggingMiddleware struct {
+type loggingMiddleware struct {
 	logger log.Logger
 	next   NagiosParserSvc
 }
 
 // GetParsedNagios logs the values and proxies the request to the inner layer
-func (mw LoggingMiddleware) GetParsedNagios(ctx context.Context) (output map[string][]parser.NagiosStatus, err error) {
+func (mw *loggingMiddleware) GetParsedNagios(ctx context.Context) (output map[string][]parser.NagiosStatus, err error) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
 			"method", "/nagios",
@@ -29,7 +29,7 @@ func (mw LoggingMiddleware) GetParsedNagios(ctx context.Context) (output map[str
 }
 
 // RefreshNagiosData logs the values and proxies the request to the inner layer
-func (mw LoggingMiddleware) RefreshNagiosData(ctx context.Context) (err error) {
+func (mw *loggingMiddleware) RefreshNagiosData(ctx context.Context) (err error) {
 	defer func(begin time.Time) {
 		mw.logger.Log(
 			"method", "/refresh",
@@ -41,7 +41,12 @@ func (mw LoggingMiddleware) RefreshNagiosData(ctx context.Context) (err error) {
 	return err
 }
 
-// NewLoggingMiddleware is a factory for the logging middleware to be used by the NagiosParserSvc
-func NewLoggingMiddleware(logger log.Logger, next NagiosParserSvc) LoggingMiddleware {
-	return LoggingMiddleware{logger, next}
+// LoggingMiddleware produces a logging middleware builder
+func LoggingMiddleware(logger log.Logger) Middleware {
+	return func(next NagiosParserSvc) NagiosParserSvc {
+		return &loggingMiddleware{
+			next:   next,
+			logger: logger,
+		}
+	}
 }

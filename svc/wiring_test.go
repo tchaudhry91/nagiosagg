@@ -19,7 +19,7 @@ var srv *httptest.Server
 func initService() {
 	logger := log.NewNopLogger()
 	service, _ := NewNagiosParserSvc(*nagiosStatusDir, tempDBWire)
-	service = NewLoggingMiddleware(logger, service)
+	service = LoggingMiddleware(logger)(service)
 	router := MakeHTTPHandler(service)
 	srv = httptest.NewServer(router)
 }
@@ -34,7 +34,7 @@ func TestHTTPWiring(t *testing.T) {
 		t.Errorf("Failed to build service")
 		t.FailNow()
 	}
-	service = NewLoggingMiddleware(log.NewNopLogger(), service)
+	service = LoggingMiddleware(log.NewNopLogger())(service)
 	router := MakeHTTPHandler(service)
 	if router == nil {
 		t.Errorf("Failed to get handler")

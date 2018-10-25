@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Middlewares
-	service = svc.NewLoggingMiddleware(logger, service)
+	service = svc.LoggingMiddleware(logger)(service)
 
 	// Initialize router
 	r := svc.MakeHTTPHandler(service)
