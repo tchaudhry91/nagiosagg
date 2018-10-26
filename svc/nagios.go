@@ -121,6 +121,9 @@ func (svc *nagiosParserSvc) RefreshNagiosData(ctx context.Context) error {
 				return err
 			}
 			err = b.Put([]byte(host), statB)
+			if err != nil {
+				return err
+			}
 		}
 		return err
 	})
