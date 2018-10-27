@@ -17,7 +17,7 @@ func main() {
 		httpAddr        = flag.String("http.addr", ":8080", "HTTP listen address")
 		nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
 		localDB         = flag.String("local_db", filepath.Join(os.TempDir(), "nagios.db"), "Filepath to store nagios status data in")
-		refreshTime     = flag.Int64("cache_expiration", 3, "Minutes until cache is expired")
+		refreshTime     = flag.Int64("cache_expiration", 180, "Seconds to keep results cached")
 	)
 	flag.Parse()
 
@@ -38,7 +38,7 @@ func main() {
 
 	// Middlewares
 	service = svc.LoggingMiddleware(logger)(service)
-	cacher := cache.New(time.Duration(*refreshTime)*time.Minute, time.Duration(*refreshTime)*time.Minute)
+	cacher := cache.New(time.Duration(*refreshTime)*time.Second, time.Duration(*refreshTime)*time.Second)
 
 	// Initialize router
 	r := svc.MakeHTTPHandler(service, cacher)
