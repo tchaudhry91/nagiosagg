@@ -81,6 +81,10 @@ func MakeGetParsedNagiosEndpoint(svc NagiosParserSvc) endpoint.Endpoint {
 		for host, problems := range resp {
 			respIssues := []NagiosStatusResponse{}
 			for _, problem := range problems {
+				// Skip events that are OK
+				if problem.State == "OK" {
+					continue
+				}
 				status := NagiosStatusResponse{}
 				status.State = problem.State
 				status.Service = problem.Service
