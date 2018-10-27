@@ -8,6 +8,7 @@ import (
 
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
+	cache "github.com/patrickmn/go-cache"
 )
 
 var (
@@ -16,9 +17,9 @@ var (
 )
 
 // MakeHTTPHandler returns an http handler for the endpoints
-func MakeHTTPHandler(svc NagiosParserSvc) http.Handler {
+func MakeHTTPHandler(svc NagiosParserSvc, cacher *cache.Cache) http.Handler {
 	r := mux.NewRouter()
-	ee := MakeServerEndpoints(svc)
+	ee := MakeServerEndpoints(svc, cacher)
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorEncoder(encodeError),
 	}

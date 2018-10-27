@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/go-kit/kit/log"
+	cache "github.com/patrickmn/go-cache"
 	"github.com/tchaudhry91/nagiosagg/svc"
 )
 
@@ -15,6 +17,7 @@ func main() {
 		httpAddr        = flag.String("http.addr", ":8080", "HTTP listen address")
 		nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
 		localDB         = flag.String("local_db", filepath.Join(os.TempDir(), "nagios.db"), "Filepath to store nagios status data in")
+		refreshTime     = flag.Int64("cache_expiration", 3, "Minutes until cache is expired")
 	)
 	flag.Parse()
 
@@ -35,9 +38,10 @@ func main() {
 
 	// Middlewares
 	service = svc.LoggingMiddleware(logger)(service)
+	cacher := cache.New(time.Duration(*refreshTime)*time.Minute, time.Duration(*refreshTime)*time.Minute)
 
 	// Initialize router
-	r := svc.MakeHTTPHandler(service)
+	r := svc.MakeHTTPHandler(service, cacher)
 
 	http.ListenAndServe(*httpAddr, r)
 

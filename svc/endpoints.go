@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
+	cache "github.com/patrickmn/go-cache"
 )
 
 type getParsedNagiosRequest struct{}
@@ -27,9 +28,10 @@ type Endpoints struct {
 }
 
 // MakeServerEndpoints returns a struct with all the Endpoints for the NagiosParserService
-func MakeServerEndpoints(svc NagiosParserSvc) Endpoints {
+func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache) Endpoints {
 	ee := Endpoints{}
 	ee.getParsedNagios = MakeGetParsedNagiosEndpoint(svc)
+	ee.getParsedNagios = cachingMiddleware(cacher)(ee.getParsedNagios)
 	ee.refreshNagiosData = MakeRefreshNagiosDataEndpoint(svc)
 	return ee
 }
@@ -70,7 +72,7 @@ func MakeGetParsedNagiosEndpoint(svc NagiosParserSvc) endpoint.Endpoint {
 			var issues getParsedNagiosResponse
 			return issues, err
 		}
-		issues := make(map[string][]NagiosStatusResponse)
+		issues := getParsedNagiosResponse{}
 		for host, problems := range resp {
 			respIssues := []NagiosStatusResponse{}
 			for _, problem := range problems {
