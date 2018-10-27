@@ -30,9 +30,14 @@ type Endpoints struct {
 // MakeServerEndpoints returns a struct with all the Endpoints for the NagiosParserService
 func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache) Endpoints {
 	ee := Endpoints{}
+
+	//gerParsedNagios Endpoint
 	ee.getParsedNagios = MakeGetParsedNagiosEndpoint(svc)
 	ee.getParsedNagios = cachingMiddleware(cacher)(ee.getParsedNagios)
+
+	//refreshNagiosData Endpoint
 	ee.refreshNagiosData = MakeRefreshNagiosDataEndpoint(svc)
+
 	return ee
 }
 
