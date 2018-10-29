@@ -21,6 +21,7 @@ func initService() *httptest.Server {
 	cacher := cache.New(3*time.Minute, 3*time.Minute)
 	service, _ := NewNagiosParserSvc(*nagiosStatusDir, tempDBWire)
 	service = LoggingMiddleware(logger)(service)
+	service = CachingMiddleware(cacher)(service)
 	router := MakeHTTPHandler(service, cacher)
 	return httptest.NewServer(router)
 }

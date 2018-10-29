@@ -1,9 +1,6 @@
 package svc
 
 import (
-	"context"
-
-	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/kit/log"
 	cache "github.com/patrickmn/go-cache"
 )
@@ -21,19 +18,12 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	}
 }
 
-// CachingMiddleware produces a caching wrapper for an endpoint
-func cachingMiddleware(cacher *cache.Cache) endpoint.Middleware {
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, request interface{}) (interface{}, error) {
-			var f interface{}
-			var found bool
-			if f, found = cacher.Get("nagios"); !found {
-				ret, err := next(ctx, request)
-				ret = ret.(getParsedNagiosResponse)
-				cacher.Set("nagios", ret, cache.DefaultExpiration)
-				return ret, err
-			}
-			return f.(getParsedNagiosResponse), nil
+// CachingMiddleware produces a caching middleware builder. This is a service middleware
+func CachingMiddleware(cacher *cache.Cache) Middleware {
+	return func(next NagiosParserSvc) NagiosParserSvc {
+		return &cachingMiddleware{
+			next:   next,
+			cacher: cacher,
 		}
 	}
 }

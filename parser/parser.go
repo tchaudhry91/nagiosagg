@@ -64,14 +64,14 @@ func ParseStatusFromFile(f string) (map[string][]NagiosStatus, error) {
 		return result, err
 	}
 	data := string(raw)
-	return ParseStatus(data)
+	return ParseStatus(&data)
 }
 
 // ParseStatus parses status and returns a mapped list of issues per hostname
-func ParseStatus(data string) (map[string][]NagiosStatus, error) {
+func ParseStatus(data *string) (map[string][]NagiosStatus, error) {
 	mapping := getStateMapping()
 	result := make(map[string][]NagiosStatus)
-	lines := strings.Split(data, "\n")
+	lines := strings.Split(*data, "\n")
 	reMap, err := getRegExMap()
 	if err != nil {
 		return result, err

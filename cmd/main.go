@@ -29,6 +29,9 @@ func main() {
 		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
+	// Initialize in-mem cacher
+	cacher := cache.New(time.Duration(*refreshTime)*time.Second, time.Duration(*refreshTime)*time.Second)
+
 	// Base Service
 	service, err := svc.NewNagiosParserSvc(*nagiosStatusDir, *localDB)
 	if err != nil {
@@ -37,8 +40,9 @@ func main() {
 	}
 
 	// Middlewares
+
+	service = svc.CachingMiddleware(cacher)(service)
 	service = svc.LoggingMiddleware(logger)(service)
-	cacher := cache.New(time.Duration(*refreshTime)*time.Second, time.Duration(*refreshTime)*time.Second)
 
 	// Initialize router
 	r := svc.MakeHTTPHandler(service, cacher)

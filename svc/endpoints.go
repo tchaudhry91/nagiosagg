@@ -33,7 +33,6 @@ func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache) Endpoints {
 
 	//gerParsedNagios Endpoint
 	ee.getParsedNagios = MakeGetParsedNagiosEndpoint(svc)
-	ee.getParsedNagios = cachingMiddleware(cacher)(ee.getParsedNagios)
 
 	//refreshNagiosData Endpoint
 	ee.refreshNagiosData = MakeRefreshNagiosDataEndpoint(svc)
