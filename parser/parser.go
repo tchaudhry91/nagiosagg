@@ -112,6 +112,11 @@ func ParseStatus(data string) (map[string][]NagiosStatus, error) {
 				cur.State = mapping["services"][cur.Values["current_state"]]
 				cur.Service = cur.Values["service_description"]
 			}
+			// Skip if the service is OK
+			if cur.State == "OK" {
+				cur = newNagiosStatus()
+				continue
+			}
 			result[cur.Hostname] = append(result[cur.Hostname], cur)
 			cur = newNagiosStatus()
 		}
