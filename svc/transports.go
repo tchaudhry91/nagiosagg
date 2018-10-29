@@ -6,9 +6,11 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-kit/kit/ratelimit"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	cache "github.com/patrickmn/go-cache"
+	"golang.org/x/time/rate"
 )
 
 var (
@@ -17,9 +19,9 @@ var (
 )
 
 // MakeHTTPHandler returns an http handler for the endpoints
-func MakeHTTPHandler(svc NagiosParserSvc, cacher *cache.Cache) http.Handler {
+func MakeHTTPHandler(svc NagiosParserSvc, cacher *cache.Cache, limiter *rate.Limiter) http.Handler {
 	r := mux.NewRouter()
-	ee := MakeServerEndpoints(svc, cacher)
+	ee := MakeServerEndpoints(svc, cacher, limiter)
 	options := []httptransport.ServerOption{
 		httptransport.ServerErrorEncoder(encodeError),
 	}
@@ -73,6 +75,8 @@ func codeFrom(err error) int {
 	switch err {
 	case ErrJSONUnMarshall:
 		return http.StatusBadRequest
+	case ratelimit.ErrLimited:
+		return http.StatusTooManyRequests
 	default:
 		return http.StatusInternalServerError
 	}

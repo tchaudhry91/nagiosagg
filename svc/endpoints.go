@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
+	"github.com/go-kit/kit/ratelimit"
 	cache "github.com/patrickmn/go-cache"
+	"golang.org/x/time/rate"
 )
 
 type getParsedNagiosRequest struct{}
@@ -28,7 +30,7 @@ type Endpoints struct {
 }
 
 // MakeServerEndpoints returns a struct with all the Endpoints for the NagiosParserService
-func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache) Endpoints {
+func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache, limiter *rate.Limiter) Endpoints {
 	ee := Endpoints{}
 
 	//gerParsedNagios Endpoint
@@ -36,6 +38,7 @@ func MakeServerEndpoints(svc NagiosParserSvc, cacher *cache.Cache) Endpoints {
 
 	//refreshNagiosData Endpoint
 	ee.refreshNagiosData = MakeRefreshNagiosDataEndpoint(svc)
+	ee.refreshNagiosData = ratelimit.NewErroringLimiter(limiter)(ee.refreshNagiosData)
 
 	return ee
 }
