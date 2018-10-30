@@ -20,6 +20,7 @@ var tempDBWire = filepath.Join(os.TempDir(), "wiring-test.db")
 const limitInterval time.Duration = 20
 
 func initService() *httptest.Server {
+	cleanUp()
 	logger := log.NewNopLogger()
 	cacher := cache.New(3*time.Minute, 3*time.Minute)
 	limit := rate.Every(time.Second * limitInterval)
