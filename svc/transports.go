@@ -10,6 +10,7 @@ import (
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	cache "github.com/patrickmn/go-cache"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/time/rate"
 )
 
@@ -40,6 +41,7 @@ func MakeHTTPHandler(svc NagiosParserSvc, cacher *cache.Cache, limiter *rate.Lim
 		options...,
 	)
 	r.Methods("GET").Path("/refresh").Handler(refreshNagiosDataHandler)
+	r.Methods("GET").Path("/metrics").Handler(promhttp.Handler())
 	return r
 }
 func decodeRefreshNagiosDataRequest(_ context.Context, r *http.Request) (interface{}, error) {

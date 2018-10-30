@@ -2,6 +2,7 @@ package svc
 
 import (
 	"github.com/go-kit/kit/log"
+	"github.com/go-kit/kit/metrics"
 	cache "github.com/patrickmn/go-cache"
 )
 
@@ -24,6 +25,18 @@ func CachingMiddleware(cacher *cache.Cache) Middleware {
 		return &cachingMiddleware{
 			next:   next,
 			cacher: cacher,
+		}
+	}
+}
+
+// InstrumentingMiddleware produces an instrumenting middleware builder. This is a service middleware
+func InstrumentingMiddleware(requests metrics.Counter, requestDuration metrics.Histogram, numHosts metrics.Histogram) Middleware {
+	return func(next NagiosParserSvc) NagiosParserSvc {
+		return &instrumentingMiddleware{
+			next:            next,
+			requests:        requests,
+			requestDuration: requestDuration,
+			numHosts:        numHosts,
 		}
 	}
 }

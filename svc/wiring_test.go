@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	kitprom "github.com/go-kit/kit/metrics/prometheus"
 	cache "github.com/patrickmn/go-cache"
+	stdprom "github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/time/rate"
 )
 
@@ -19,17 +21,53 @@ var tempDBWire = filepath.Join(os.TempDir(), "wiring-test.db")
 
 const limitInterval time.Duration = 20
 
+var requests *kitprom.Counter
+var requestDuration *kitprom.Summary
+var numHosts *kitprom.Summary
+
+func init() {
+	fieldKeys := []string{"method", "err"}
+	requests = kitprom.NewCounterFrom(
+		stdprom.CounterOpts{
+			Namespace: "nagios_svc",
+			Name:      "requests_count",
+			Help:      "Total Endpoints Requested",
+		},
+		fieldKeys,
+	)
+	requestDuration = kitprom.NewSummaryFrom(
+		stdprom.SummaryOpts{
+			Namespace: "nagios_svc",
+			Name:      "request_duration",
+			Help:      "Time taken per request",
+		},
+		fieldKeys,
+	)
+	numHosts = kitprom.NewSummaryFrom(
+		stdprom.SummaryOpts{
+			Namespace: "nagios_svc",
+			Name:      "num_hosts",
+			Help:      "Number of hosts found with issues",
+		},
+		fieldKeys,
+	)
+}
+
 func initService() *httptest.Server {
 	cleanUp()
+	// Middleware inits
 	logger := log.NewNopLogger()
 	cacher := cache.New(3*time.Minute, 3*time.Minute)
 	limit := rate.Every(time.Second * limitInterval)
 	limiter := rate.NewLimiter(limit, 1)
 
+	// Service inits
 	service, _ := NewNagiosParserSvc(*nagiosStatusDir, tempDBWire)
-	service = LoggingMiddleware(logger)(service)
 	service = CachingMiddleware(cacher)(service)
+	service = InstrumentingMiddleware(requests, requestDuration, numHosts)(service)
+	service = LoggingMiddleware(logger)(service)
 	router := MakeHTTPHandler(service, cacher, limiter)
+
 	return httptest.NewServer(router)
 }
 

@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/go-kit/kit/log"
+	kitprom "github.com/go-kit/kit/metrics/prometheus"
 	cache "github.com/patrickmn/go-cache"
+	stdprom "github.com/prometheus/client_golang/prometheus"
 	"github.com/tchaudhry91/nagiosagg/svc"
 	"golang.org/x/time/rate"
 )
@@ -43,8 +45,36 @@ func main() {
 		panic("Failed to create service")
 	}
 
+	// Initialize Prometheus Gatherers
+	fieldKeys := []string{"method", "err"}
+	requests := kitprom.NewCounterFrom(
+		stdprom.CounterOpts{
+			Namespace: "nagios_svc",
+			Name:      "requests_count",
+			Help:      "Total Endpoints Requested",
+		},
+		fieldKeys,
+	)
+	requestDuration := kitprom.NewSummaryFrom(
+		stdprom.SummaryOpts{
+			Namespace: "nagios_svc",
+			Name:      "request_duration",
+			Help:      "Time taken per request",
+		},
+		fieldKeys,
+	)
+	numHosts := kitprom.NewSummaryFrom(
+		stdprom.SummaryOpts{
+			Namespace: "nagios_svc",
+			Name:      "num_hosts",
+			Help:      "Number of hosts found with issues",
+		},
+		fieldKeys,
+	)
+
 	// Middlewares
 
+	service = svc.InstrumentingMiddleware(requests, requestDuration, numHosts)(service)
 	service = svc.CachingMiddleware(cacher)(service)
 	service = svc.LoggingMiddleware(logger)(service)
 
