@@ -36,23 +36,6 @@ func cleanUp() {
 	os.Remove(tempDBWire)
 }
 
-func TestHTTPWiring(t *testing.T) {
-	service, err := NewNagiosParserSvc(*nagiosStatusDir, tempDBWire)
-	if err != nil {
-		t.Errorf("Failed to build service")
-		t.FailNow()
-	}
-	service = LoggingMiddleware(log.NewNopLogger())(service)
-	cacher := cache.New(3*time.Minute, 3*time.Minute)
-	limiter := rate.NewLimiter(rate.Every(time.Minute), 1)
-	router := MakeHTTPHandler(service, cacher, limiter)
-	if router == nil {
-		t.Errorf("Failed to get handler")
-		t.FailNow()
-	}
-	cleanUp()
-}
-
 func TestNagiosEndpoints(t *testing.T) {
 	srv := initService()
 	for _, testcase := range []struct {
@@ -120,4 +103,24 @@ func TestRateLimiter(t *testing.T) {
 		})
 	}
 	cleanUp()
+}
+
+func BenchmarkGetNagiosDataRequests(b *testing.B) {
+	srv := initService()
+	// Populate Data
+	req, _ := http.NewRequest("GET", srv.URL+"/refresh", nil)
+	resp, _ := http.DefaultClient.Do(req)
+	if resp.StatusCode != http.StatusOK {
+		b.Errorf("Refresh failed")
+	}
+	b.ResetTimer()
+	var errCount int
+	for n := 0; n < b.N; n++ {
+		req, _ := http.NewRequest("GET", srv.URL+"/nagios", nil)
+		resp, _ := http.DefaultClient.Do(req)
+		if resp.StatusCode != http.StatusOK {
+			errCount++
+		}
+	}
+	b.Logf("Errors:%d", errCount)
 }
