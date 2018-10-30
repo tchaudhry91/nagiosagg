@@ -82,6 +82,9 @@ func TestEndpointTiming(t *testing.T) {
 }
 
 func TestRateLimiter(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping test in short mode")
+	}
 	srv := initService()
 	for _, testcase := range []struct {
 		name   string
