@@ -18,7 +18,7 @@ import (
 func main() {
 	var (
 		httpAddr        = flag.String("http.addr", ":8080", "HTTP listen address")
-		nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
+		nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Directory containing .dat files from nagios")
 		localDB         = flag.String("local_db", filepath.Join(os.TempDir(), "nagios.db"), "Filepath to store nagios status data in")
 		refreshTime     = flag.Int64("cache_expiration", 180, "Seconds to keep results cached")
 		rateLimiter     = flag.Int64("refresh_interval", 60, "Minimum seconds between processing refresh requests")
