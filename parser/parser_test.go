@@ -72,9 +72,9 @@ func TestParser(t *testing.T) {
 			others++
 		}
 	}
-	t.Logf("Following distribution was found:\nHostAlers:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
-	if hosts < 1 || services < 1 || others > 0 {
-		t.Errorf("Following distribution was found:\nHostAlers:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
+	t.Logf("Following distribution was found:\nHostAlerts:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
+	if (hosts+services) < 1 || others > 0 {
+		t.Errorf("Following distribution was found:\nHostAlerts:%d\nServiceAlerts:%d\nOthers:%d", hosts, services, others)
 		t.FailNow()
 	}
 }
