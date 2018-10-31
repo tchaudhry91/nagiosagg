@@ -61,4 +61,5 @@ The `/nagios` endpoint returns a JSON with entries as follows:
 
 The `/metrics` endpoint returns prometheus format metrics for the service
 
-Tanmay Chaudhry (tanmay.chaudhry@gmail.com)
+**Licensing**
+This project is licensed under the Apache V2 License. See LICENSE for more information.
