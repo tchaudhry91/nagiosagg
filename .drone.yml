@@ -1,0 +1,11 @@
+workspace:
+  base: /go
+  path: src/github.com/tchaudhry91/nagiosagg
+
+pipeline:
+  build:
+    image: golang
+    commands:
+      - make lint
+      - make build
+      - make build-arm
