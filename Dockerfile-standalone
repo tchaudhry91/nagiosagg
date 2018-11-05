@@ -12,4 +12,5 @@ RUN        apk update &&\
            apk add --no-cache ca-certificates &&\
            rm -rf /var/cache/apk/*
 COPY       --from=BUILDER /go/src/github.com/tchaudhry91/nagiosagg/release/nagios-svc /bin/
-ENTRYPOINT [ "/bin/hash-svc" ]
+ENTRYPOINT [ "/bin/nagios-svc" ]
+CMD        [ "-nagios_status_dir /statuses" ]
