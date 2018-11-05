@@ -1,7 +1,6 @@
 package svc
 
 import (
-	"flag"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,7 +15,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-var nagiosStatusDir = flag.String("nagios_status_dir", "statuses", "Nagios Status Directory")
+var nagiosStatusDir = statusDir
 var tempDBWire = filepath.Join(os.TempDir(), "wiring-test.db")
 
 const limitInterval time.Duration = 20
