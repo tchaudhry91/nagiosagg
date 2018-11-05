@@ -11,5 +11,7 @@ pipeline:
 
   docker:
     image: plugins/docker
+    when:
+      branch: master
     commands:
       - make docker-drone

@@ -11,5 +11,5 @@ FROM       alpine
 RUN        apk update &&\
            apk add --no-cache ca-certificates &&\
            rm -rf /var/cache/apk/*
-COPY       --from=BUILDER /go/src/github.com/tchaudhry91/hash-svc/release/nagios-svc /bin/
+COPY       --from=BUILDER /go/src/github.com/tchaudhry91/nagios-svc/release/nagios-svc /bin/
 ENTRYPOINT [ "/bin/hash-svc" ]
