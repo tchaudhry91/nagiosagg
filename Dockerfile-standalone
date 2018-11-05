@@ -3,7 +3,7 @@ FROM     golang:latest as BUILDER
 RUN      mkdir -p /go/src/github.com/tchaudhry91/nagiosagg
 WORKDIR /go/src/github.com/tchaudhry91/nagiosagg
 COPY    . .
-RUN     make build
+RUN     make build-amd64
 
 
 # Final Image

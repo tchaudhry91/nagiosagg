@@ -1,5 +1,6 @@
 build: lint test build-amd64 build-arm 
-docker: build-amd64 docker-amd64 build-arm docker-arm
+docker-local: build-amd64 docker-amd64 build-arm docker-arm
+docker-drone: docker-standalone
 
 clean:
 	@echo ">> Cleaning Release"
@@ -38,7 +39,7 @@ build-amd64:
 
 docker-amd64:
 	@echo ">> Building an AMD64 Docker image"
-	@docker build -t tchaudhry/nagios-svc:master .
+	@docker build -f Dockerfile-amd64 -t tchaudhry/nagios-svc:master .
 
 build-arm:
 	@echo ">> Grabbing Build Dependencies"
@@ -54,4 +55,4 @@ docker-arm:
 
 docker-standalone:
 	@echo ">> Building inside docker"
-	@docker build -f Dockerfile-standalone -t tchaudhry/nagios-svc:std .
+	@docker build -f Dockerfile-standalone -t tchaudhry/nagios-svc:master .
