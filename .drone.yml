@@ -8,10 +8,4 @@ pipeline:
     commands:
       - make lint
       - make test-short
-
-  docker:
-    image: plugins/docker
-    when:
-      branch: master
-    commands:
-      - make docker-drone
+      - make build

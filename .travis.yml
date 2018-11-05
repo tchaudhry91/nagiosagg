@@ -1,0 +1,19 @@
+sudo: required
+language: go
+
+notifications:
+  email: true
+
+branches:
+  only:
+    - master
+
+services:
+  - docker
+
+script:
+  - make test-short
+  - make docker-local
+
+after_success:
+  - make docker-push
