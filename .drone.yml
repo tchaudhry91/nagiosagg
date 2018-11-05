@@ -6,7 +6,8 @@ pipeline:
   build:
     image: golang
     commands:
-      - make build
+      - make lint
+      - make test-short
 
   docker:
     image: plugins/docker
