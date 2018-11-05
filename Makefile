@@ -1,9 +1,11 @@
-all: lint test build-amd64 build-arm
-build: build-amd64
+build: lint test build-amd64 build-arm 
+docker: build-amd64 docker-amd64 build-arm docker-arm
 
 clean:
 	@echo ">> Cleaning Release"
 	@rm -rf release
+	@docker rmi tchaudhry/nagios-svc:master
+	@docker rmi tchaudhry/nagios-svc:armhf
 
 test:
 	@echo ">> Grabbing Test Dependencies"
@@ -34,8 +36,22 @@ build-amd64:
 	@echo ">> Creating Release for AMD64"
 	@GOOS=linux GOARCH=amd64 go build -o release/nagios-svc ./cmd
 
+docker-amd64:
+	@echo ">> Building an AMD64 Docker image"
+	@docker build -t tchaudhry/nagios-svc:master .
+
 build-arm:
 	@echo ">> Grabbing Build Dependencies"
 	@go get -v ./...
+	@echo ">> Register binfmt qemu bin for arm builder"
+	@docker run --rm --privileged multiarch/qemu-user-static:register --reset
 	@echo ">> Creating Release for ARM"
-	@GOOS=linux GOARCH=arm go build -o release/nagios-svc-arm ./cmd
+	@GOOS=linux GOARCH=arm CGO_ENABLED=0 go build -o release/nagios-svc-arm ./cmd
+
+docker-arm:
+	@echo ">> Building an armhf docker image"
+	@docker build -f Dockerfile-ARM -t tchaudhry/nagios-svc:armhf .
+
+docker-standalone:
+	@echo ">> Building inside docker"
+	@docker build -f Dockerfile-standalone -t tchaudhry/nagios-svc:std .

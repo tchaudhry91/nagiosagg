@@ -1,0 +1,15 @@
+# Builder 
+FROM     golang:latest as BUILDER
+RUN      mkdir -p /go/src/github.com/tchaudhry91/nagiosagg
+WORKDIR /go/src/github.com/tchaudhry91/nagiosagg
+COPY    . .
+RUN     make build
+
+
+# Final Image
+FROM       alpine
+RUN        apk update &&\
+           apk add --no-cache ca-certificates &&\
+           rm -rf /var/cache/apk/*
+COPY       --from=BUILDER /go/src/github.com/tchaudhry91/hash-svc/release/nagios-svc /bin/
+ENTRYPOINT [ "/bin/hash-svc" ]

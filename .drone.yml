@@ -6,6 +6,5 @@ pipeline:
   build:
     image: golang
     commands:
-      - make lint
       - make build
-      - make build-arm
+      - make docker
