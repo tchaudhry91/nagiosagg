@@ -159,6 +159,7 @@ func BenchmarkGetNagiosDataRequests(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		req, _ := http.NewRequest("GET", srv.URL+"/nagios", nil)
 		resp, _ := http.DefaultClient.Do(req)
+		resp.Body.Close()
 		if resp.StatusCode != http.StatusOK {
 			errCount++
 		}

@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var statusDir = flag.String("statusDir", "statuses", "Directory containing nagios .dat files")
+var statusDir = flag.String("statusDir", "../samples/public", "Directory containing nagios .dat files")
 var svc NagiosParserSvc
 
 func init() {

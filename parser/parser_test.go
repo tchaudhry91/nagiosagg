@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var nagiosFile = flag.String("nagiosfile", "status.dat", "sample nagios status.dat file to parse")
+var nagiosFile = flag.String("nagiosfile", "../samples/public/status.dat", "sample nagios status.dat file to parse")
 
 func TestRegularExpressions(t *testing.T) {
 	reMap, err := getRegExMap()
@@ -51,7 +51,7 @@ func TestParser(t *testing.T) {
 	f := nagiosFile
 	result, err := ParseStatusFromFile(*f)
 	if err != nil {
-		t.Errorf("Failed to parse nagios status")
+		t.Errorf("Failed to parse nagios status:%v", err)
 		t.FailNow()
 	}
 	if !(len(result) > 0) {
