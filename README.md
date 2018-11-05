@@ -1,5 +1,6 @@
 # Nagios Aggregator Service
 [![Go Report Card](https://goreportcard.com/badge/github.com/tchaudhry91/nagiosagg)](https://goreportcard.com/report/github.com/tchaudhry91/nagiosagg)
+[![Build Status](https://travis-ci.org/tchaudhry91/nagiosagg.svg?branch=master)](https://travis-ci.org/tchaudhry91/nagiosagg)
 
 This is a simple service that maintains an aggregation of nagios alerts from different nagios instances.
 It works by parsing the nagios status.dat files and returns a JSON response containing a map with lists of issues mapped per hostname.
