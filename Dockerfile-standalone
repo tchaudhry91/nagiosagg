@@ -1,6 +1,7 @@
 # Builder 
-FROM     golang:latest as BUILDER
-RUN      mkdir -p /go/src/github.com/tchaudhry91/nagiosagg
+FROM    golang:latest as BUILDER
+ENV     CGO_ENABLED=0 
+RUN     mkdir -p /go/src/github.com/tchaudhry91/nagiosagg
 WORKDIR /go/src/github.com/tchaudhry91/nagiosagg
 COPY    . .
 RUN     make build-amd64

@@ -39,7 +39,7 @@ build-amd64:
 	@echo ">> Grabbing Build Dependencies"
 	@go get -v ./...
 	@echo ">> Creating Release for AMD64"
-	@GOOS=linux GOARCH=amd64 go build -o release/nagios-svc ./cmd
+	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o release/nagios-svc ./cmd
 
 docker-amd64:
 	@echo ">> Building an AMD64 Docker image"
