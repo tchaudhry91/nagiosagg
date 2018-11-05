@@ -1,4 +1,4 @@
-all: lint build-amd64 build-arm
+all: lint test build-amd64 build-arm
 build: build-amd64
 
 clean:
@@ -20,7 +20,7 @@ test-short:
 lint:
 	@echo ">> Grabbing Build Dependencies"
 	@go get -v ./...
-	@go get github.com/golang/lint/golint
+	@go get golang.org/x/lint/golint
 	@go get github.com/fzipp/gocyclo
 	GO_FILES=$(find . -iname '*.go' -type f | grep -v /vendor/)
 	@test -z $(gofmt -s -l $GO_FILES)
