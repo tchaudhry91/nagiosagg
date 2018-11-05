@@ -5,4 +5,4 @@ RUN apk update &&\
     rm -rf /var/cache/apk/*
 COPY release/nagios-svc /bin/
 ENTRYPOINT [ "/bin/nagios-svc" ]
-CMD        [ "-nagios_status_dir /statuses" ]
+CMD        [ "-nagios_status_dir", "/statuses" ]
