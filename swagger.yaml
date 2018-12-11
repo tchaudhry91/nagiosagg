@@ -1,0 +1,107 @@
+openapi: 3.0.0
+info:
+  title: "Nagios Aggregator Service"
+  version: "0.1.0"
+  contact:
+    name: Tanmay Chaudhry
+    email: tanmay.chaudhry@gmail.com
+    url: https://github.com/tchaudhry91/nagiosagg
+components:
+  schemas:
+    HostObject:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/HostAlerts'
+      example:
+        host1:
+          - state: WARNING
+            output: Plugin output here
+            service: sshd
+            attempts: 4/4
+            last_check: 2018-09-26T06:15:41Z
+            next_check: 2018-09-26T06:15:41Z
+            last_state_changed: 2018-09-26T06:15:41Z
+          - state: CRITICAL
+            output: Plugin output here
+            service: httpd
+            attempts: 3/4
+            last_check: 2018-09-26T06:15:41Z
+            next_check: 2018-09-26T06:15:41Z
+            last_state_changed: 2018-09-26T06:15:41Z
+        host2:
+          - state: WARNING
+            output: Plugin output here
+            service: sshd
+            attempts: 4/4
+            last_check: 2018-09-26T06:15:41Z
+            next_check: 2018-09-26T06:15:41Z
+            last_state_changed: 2018-09-26T06:15:41Z
+          - state: CRITICAL
+            output: Plugin output here
+            service: httpd
+            attempts: 3/4
+            last_check: 2018-09-26T06:15:41Z
+            next_check: 2018-09-26T06:15:41Z
+            last_state_changed: 2018-09-26T06:15:41Z
+    HostAlerts:
+      type: array
+      items:
+        type: object
+        title: Alerts
+        properties:
+          state:
+            type: string
+            example:
+              WARNING
+          output:
+            type: string
+            example:
+              Plugin output here
+          service:
+            type: string
+            example:
+              sshd
+          attempts:
+            type: string
+            example:
+              4/4
+          last_check:
+            type: string
+            format: date-time
+          next_check:
+            type: string 
+            format: date-time
+          last_state_changed:
+            type: string
+            format: date-time
+paths:
+  /refresh:
+    get:
+      summary: Refreshes the local DB with events from status.dat files
+      responses:
+        '200':
+          description: OK
+        '429':
+          description: Too Many Requests
+  /nagios:
+    get:
+      summary: Returns a hostname mapped list of all nagios alerts
+      responses:
+        '200':
+          description: A hostname mapped list of nagios alerts list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostObject'
+        '500':
+          description: Internal Server Error
+        '400':
+          description: Bad Request
+  /metrics:
+    get:
+      summary: Returns prometheus metrics
+      responses:
+        '200':
+          description: list of prometheus metrics
+        '500':
+          description: Internal Server Error
